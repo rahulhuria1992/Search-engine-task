@@ -1,0 +1,85 @@
+<html>
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+<body>
+
+<div ng-app="myBooksSearchApp" ng-controller="BooksSearchController" ng-init="descStatus='true'">
+	<div style="background-color:lightgrey;height:60px">
+		<form name="searchForm">
+			<div class="form-group" style="padding:20px">
+			<div class="col-sm-2 h4">MySearchBar</div>
+			<div class="col-sm-6">
+			<input type="text" ng-model="inputSearch" name="inputSearch" class="form-control" placeholder="Search" required/>
+			</div>
+			 <button class="btn btn-primary"><span class="glyphicon glyphicon-search"></span> Search</button>
+			</div>
+			</form>
+	</div>
+	<br><br>
+	<div ng-show="searchForm.inputSearch.$valid" class="col-sm-6" style="margin-bottom:50px;">
+			<div class="col-sm-12 h3">Search Results : </div>
+			<div class="col-sm-12"  style="cursor:pointer;margin:10px;" ng-repeat="SearchData in booksData | filter:inputSearch"  onmouseover="this.style.background='lightgrey';" onmouseout="this.style.background='white';" >
+				<div class="col-sm-12" ng-click=bookDescriptionFunc(SearchData.selfLink)>
+				<div class="col-sm-2">
+				<img src={{SearchData.volumeInfo.imageLinks.smallThumbnail}} alt="not found" height=80 width=60>
+				</div>
+				<div class="col-sm-9">
+				<div style="Color:blue;font-weight:bolder ">{{SearchData.volumeInfo.title + ' - ' + SearchData.volumeInfo.publisher + ' - ' + SearchData.volumeInfo.pageCount + ' Pages'}}</div>
+				<div>Author :<strong><span ng-repeat="author in SearchData.volumeInfo.authors">{{author+', '}}</span></strong></div>
+				<div>Rating :{{SearchData.volumeInfo.averageRating+'/5'}}</div>
+				<div>ISBN :<strong><span ng-repeat="isbn in SearchData.volumeInfo.industryIdentifiers">{{isbn.identifier+', '}}</span></strong></div>
+				</div>
+				</div>
+			</div>
+
+
+	</div>
+<div class="col-sm-5" ng-hide="descStatus || searchForm.inputSearch.$invalid" style="margin-right:10px;margin-bottom:50px;box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
+			<div class="col-sm-12" style="margin-top:8px;">
+				<div class="col-sm-12">
+					<div class="col-sm-9">
+					<h3>{{bookDetail.volumeInfo.title}}</h3><br>
+					By <span ng-repeat="author in bookDetail.volumeInfo.authors">{{author+', '}}</span>
+					<br> {{bookDetail.volumeInfo.publisher + ',' + bookDetail.volumeInfo.publishedDate}}
+					</div>
+					<div class="col-sm-2">
+					<img src={{bookDetail.volumeInfo.imageLinks.smallThumbnail}} alt="not found" height=160 width=135>
+					</div>
+				</div>
+				<div class="col-sm-12">
+				<hr>
+				</div>
+				<div class="col-sm-12">
+				<div class="h4" style="Color:blue;font-weight:bolder">Bibliographic Information</div>
+				<div>Title : {{bookDetail.volumeInfo.title}}</div>
+				<div>Author : <span ng-repeat="author in bookDetail.volumeInfo.authors">{{author+', '}}</span></div>
+				<div>Publisher : {{bookDetail.volumeInfo.publisher + ',' + bookDetail.volumeInfo.publishedDate}}</div>
+				<div>ISBN : <span ng-repeat="isbn in bookDetail.volumeInfo.industryIdentifiers">{{isbn.identifier+', '}}</span></div>
+				<div>Lenght : {{bookDetail.volumeInfo.pageCount }}</div>
+				<div>Description : {{bookDetail.volumeInfo.description }}</div>
+				</div>
+				<div class="col-sm-12 text-right" style="margin-bottom:10px"><a href={{bookDetail.accessInfo.webReaderLink}} target="_Blank">Preview this Book >></a></div>
+			</div>
+	</div>
+
+
+
+</div>
+
+<script>
+var app = angular.module('myBooksSearchApp', []);
+app.controller('BooksSearchController', function($scope, $http) {
+  $http.get("https://www.googleapis.com/books/v1/volumes?q=%3CBOOK_NAME").then(function (response) {
+      $scope.booksData = response.data.items;
+  });
+  $scope.bookDescriptionFunc = function(bookApiLink) {
+		$scope.descStatus=true;
+		$http.get(bookApiLink).then(function (response) {
+		$scope.bookDetail = response.data;
+		$scope.descStatus=false;
+		});
+ }
+});
+</script>
+</body>
+</html>
